@@ -1,7 +1,7 @@
 #include "stdio.h"
 #include "stdlib.h"
 #include "chrono"
-#include "NL.h"
+#include "SNL.h"
 
 int main(int argc, char *argv[]) {
 

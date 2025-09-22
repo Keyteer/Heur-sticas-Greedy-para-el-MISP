@@ -7,24 +7,24 @@ struct Neighbor {
 // Sorted Neighborhood List
 struct SNL {
     int n;
-    int* nodes;
+    int* nodes_order;
     struct Neighbor** neighborhoods;
     
     bool* valid;
 
     SNL(int n) {
         this->n = n;
-        nodes = new int[n];
+        nodes_order = new int[n];
         neighborhoods = new struct Neighbor*[n];
         valid = new bool[n];
         for (int i = 0; i < n; i++) {
-            nodes[i] = i;
+            nodes_order[i] = i;
             neighborhoods[i] = nullptr;
             valid[i] = true;
         }
     }
     ~SNL() {
-        delete[] nodes;
+        delete[] nodes_order;
         delete[] valid;
         for (int i = 0; i < n; i++) {
             struct Neighbor* current = neighborhoods[i];

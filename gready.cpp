@@ -16,9 +16,6 @@ int main(int argc, char *argv[]) {
     
     int *degrees = new int[n];
     SNL *nl = new SNL(n);
-    
-    int misp_size = 0;
-    int misp[n];
 
     for (int i = 0; i < n; i++) {
         degrees[i] = 0;
@@ -37,10 +34,13 @@ int main(int argc, char *argv[]) {
     // time start
     auto start = std::chrono::high_resolution_clock::now();
 
-    //sort nodes by degree ascending, store transpose in nl->nodes
+    //sort nodes_order by degree ascending, store transpose in nl->nodes_order
     
     //mergeSort.h
 
+    
+    int misp_size = 0;
+    int misp[n];
 
 
     for(int i = 0; i < n; i++) {

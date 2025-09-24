@@ -2,6 +2,7 @@
 #include "stdlib.h"
 #include "chrono"
 #include "SNL.h"
+#include "mergeSort.h"
 
 int main(int argc, char *argv[]) {
 
@@ -35,16 +36,24 @@ int main(int argc, char *argv[]) {
     auto start = std::chrono::high_resolution_clock::now();
 
     //sort nodes_order by degree ascending, store transpose in nl->nodes_order
-    
-    //mergeSort.h
+    mergeSort(degrees, nl->nodes_order, n);
 
-    
     int misp_size = 0;
     int misp[n];
-
-
-    for(int i = 0; i < n; i++) {
-
+    
+    //greedy MISP
+    for (int i = 0; i < n; i++) {
+        int node = nl->nodes_order[i];
+        if (nl->valid[node]) {
+            nl->valid[node] = false;
+            misp[misp_size] = node;
+            misp_size++;
+            struct Neighbor* neighbor = nl->neighborhoods[node];
+            while (neighbor != nullptr) {
+                nl->valid[neighbor->node] = false;
+                neighbor = neighbor->next;
+            }
+        }
     }
 
     //time end

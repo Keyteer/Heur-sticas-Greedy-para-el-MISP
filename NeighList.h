@@ -1,35 +1,36 @@
+#pragma once
 
 struct Neighbor {
     int node;
-    struct Neighbor* next;
+    struct Neighbor *next;
 };
 
-// Sorted Neighborhood List
-struct SNL {
+// Neighborhood List
+struct NeighList {
     int n;
-    int* nodes_order;
-    struct Neighbor** neighborhoods;
-    
-    bool* valid;
+    int *degrees;
+    struct Neighbor **neighborhoods;
 
-    SNL(int n) {
+    bool *valid;
+
+    NeighList(int n) {
         this->n = n;
-        nodes_order = new int[n];
-        neighborhoods = new struct Neighbor*[n];
+        degrees = new int[n];
+        neighborhoods = new struct Neighbor *[n];
         valid = new bool[n];
         for (int i = 0; i < n; i++) {
-            nodes_order[i] = i;
+            degrees[i] = 0;
             neighborhoods[i] = nullptr;
             valid[i] = true;
         }
     }
-    ~SNL() {
-        delete[] nodes_order;
+    ~NeighList() {
+        delete[] degrees;
         delete[] valid;
         for (int i = 0; i < n; i++) {
-            struct Neighbor* current = neighborhoods[i];
+            struct Neighbor *current = neighborhoods[i];
             while (current != nullptr) {
-                struct Neighbor* temp = current;
+                struct Neighbor *temp = current;
                 current = current->next;
                 delete temp;
             }
@@ -38,19 +39,20 @@ struct SNL {
     }
 
     void push(int u, int v) {
-        struct Neighbor* newNeighbor = new struct Neighbor();
+        struct Neighbor *newNeighbor = new struct Neighbor();
         newNeighbor->node = v;
         newNeighbor->next = nullptr;
 
         if (neighborhoods[u] == nullptr) {
             neighborhoods[u] = newNeighbor;
         } else {
-            struct Neighbor* temp = neighborhoods[u];
+            struct Neighbor *temp = neighborhoods[u];
             while (temp->next != nullptr) {
                 temp = temp->next;
             }
             temp->next = newNeighbor;
         }
-    }
 
+        degrees[u]++;
+    }
 };

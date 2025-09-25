@@ -1,80 +1,114 @@
-#include "stdio.h"
-#include "stdlib.h"
+#include <stdio.h>
+#include <stdlib.h>
 #include <chrono>
 #include <sys/stat.h>
 #include "gready.h"
 #include "NeighList.h"
 #include "loader.h"
-
-// compute degrees array from a loaded NeighList
-static void computeDegrees(NeighList *nl, int *degrees) {
-	int n = nl->n;
-	for (int i = 0; i < n; ++i) {
-		int deg = 0;
-		struct Neighbor *curr = nl->neighborhoods[i];
-		while (curr != nullptr) {
-			++deg;
-			curr = curr->next;
-		}
-		degrees[i] = deg;
-	}
-}
+#include "progressBar.h"
 
 int main(int argc, char *argv[]) {
-	const char *default_dir = "dataset_grafos_no_dirigidos/new_1000_dataset";
-	const char *path = (argc >= 2) ? argv[1] : default_dir;
+    if (argc < 2) {
+        fprintf(stderr, "Usage: %s <graph_file_or_directory>\n", argv[0]);
+        return 1;
+    }
 
-	// Determine if path is a directory
-	struct stat st;
-	bool path_is_dir = (stat(path, &st) == 0 && S_ISDIR(st.st_mode));
+    const char *path = argv[1];
+    if (path[strlen(path) - 1] == '/')
+        ((char *)path)[strlen(path) - 1] = '\0';
 
-	const int MAX_FILES = 8192;
-	char filePaths[MAX_FILES][256];
-	int fileCount = 0;
+    struct stat path_stat;
+    if (stat(path, &path_stat) != 0) {
+        perror("Error accessing path");
+        return 1;
+    }
 
-	if (path_is_dir) {
-		fileCount = getAllFiles(path, MAX_FILES, filePaths);
-		if (fileCount < 0) {
-			fprintf(stderr, "Failed to read directory: %s\n", path);
-			return 1;
-		}
-	} else {
-		// single file
-		strncpy(filePaths[0], path, 255);
-		filePaths[0][255] = '\0';
-		fileCount = 1;
-	}
+    char **fileNames;
+    int fileCount = 0;
 
-	if (fileCount == 0) {
-		fprintf(stderr, "No files found in %s\n", path);
-		return 1;
-	}
+    if (S_ISDIR(path_stat.st_mode)) {
+        // directory
+        fileCount = getAllFiles(path, fileNames);
 
-	for (int i = 0; i < fileCount; ++i) {
-		const char *file = filePaths[i];
-		NeighList *nl = loadGraph(file);
-		if (nl == nullptr) {
-			fprintf(stderr, "Skipping file (could not load): %s\n", file);
-			continue;
-		}
+        if (fileCount == 0) {
+            fprintf(stderr, "No files found in %s\n", path);
+            return 1;
+        }
+    } else {
+        // single file
+        fileNames = (char **)malloc(1 * sizeof(char *));
+        fileNames[0] = (char *)malloc((strlen(path) + 1) * sizeof(char));
+        strncpy(fileNames[0], path, strlen(path) + 1);
+        fileCount = 1;
+    }
 
-		int n = nl->n;
-		int *degrees = new int[n];
-		computeDegrees(nl, degrees);
+    // indicator sumations for densities [0.1, 0.2, ... , 0.9]
+    double grTimes[9] = {0,0,0,0,0,0,0,0,0};
+    double rgrTimes[9] = {0,0,0,0,0,0,0,0,0};
+    int grResults[9] = {0,0,0,0,0,0,0,0,0};
+    int rgrResults[9] = {0,0,0,0,0,0,0,0,0};
+    int tests[9] = {0,0,0,0,0,0,0,0,0};
 
-		int *misp = new int[n];
+    for (int i = 0; i < fileCount; i++) {
+        const char *file = fileNames[i];
 
-		auto start = std::chrono::high_resolution_clock::now();
-		int misp_size = gready(n, nl, degrees, misp);
-		auto end = std::chrono::high_resolution_clock::now();
-		std::chrono::duration<double, std::milli> elapsed = end - start;
+        int density = -1;
+        // selecting only files with density [0.1, 0.2, ... , 0.9]
+        for (int i = 0; i < 9; i++) {
+            char densStr[10];
+            sprintf(densStr, "p0c0.%d", i + 1);
+            if (strstr(file, densStr)) {
+                density = i;
+                break;
+            }
+        }
+        if (density < 0) 
+            continue;
 
-		printf("%s: Time: %f ms, MISP size: %d\n", file, elapsed.count(), misp_size);
+        // load graph
+        char *fullPath = new char[strlen(path) + strlen(file) + 2];
+        sprintf(fullPath, "%s/%s", path, file);       
+        NeighList *nl = loadGraph(fullPath);
+        if (nl == nullptr) {
+            fprintf(stderr, "Skipping file (could not load): %s\n", file);
+            continue;
+        }
 
-		delete[] misp;
-		delete[] degrees;
-		delete nl;
-	}
+        int *misp = new int[nl->n];
 
-	return 0;
+        auto start = std::chrono::high_resolution_clock::now();
+        int misp_size = gready(nl->n, nl, misp);
+        auto end = std::chrono::high_resolution_clock::now();
+        std::chrono::duration<double, std::milli> elapsed = end - start;
+
+        grTimes[density] += elapsed.count();
+        grResults[density] += misp_size;
+        tests[density] += 1;
+
+        delete[] misp;
+        delete nl;
+
+        print_progress_bar(i + 1, fileCount, 20);
+    }
+    
+
+    printf("Desnsity,Greedy_Time(ms),Greedy_MISP_Size,Random_Greedy_Time(ms),Random_Greedy_MISP_Size\n");
+    for (int i = 0; i < 9; i++) {
+        if (tests[i] > 0) {
+            grTimes[i] /= tests[i];
+            rgrTimes[i] /= tests[i];
+            grResults[i] /= tests[i];
+            rgrResults[i] /= tests[i];
+            printf("0.%d,%f,%d,%f,%d\n", i + 1,
+                   grTimes[i] / tests[i], grResults[i],
+                   rgrTimes[i] / tests[i], rgrResults[i]);
+        }
+    }
+
+    for (int i = 0; i < fileCount; ++i) {
+        free(fileNames[i]);
+    }
+    free(fileNames);
+
+    return 0;
 }

@@ -31,10 +31,9 @@ NeighList *loadGraph(const char *filename) {
 
 // Get all file paths from a directory
 // dirPath [in]: path to the directory
-// maxFiles [in]: maximum number of files to read
-// filePaths [out]: array to store file paths
+// fileNames [out]: pointer to an array of strings to store file names (allocated inside the function)
 // returns the number of files read, or -1 on error
-int getAllFiles(const char *dirPath, int maxFiles, char filePaths[][256]) {
+int getAllFiles(const char *dirPath, char **&fileNames) {
     int count = 0;
     DIR *dir = opendir(dirPath);
     if (dir == NULL) {
@@ -43,13 +42,22 @@ int getAllFiles(const char *dirPath, int maxFiles, char filePaths[][256]) {
     }
 
     struct dirent *entry;
-    while ((entry = readdir(dir)) != NULL && count < maxFiles) {
+    while ((entry = readdir(dir)) != NULL) {
         if (entry->d_type == DT_REG) { // if regular file
-            snprintf(filePaths[count], 256, "%s/%s", dirPath, entry->d_name);
             count++;
         }
     }
 
-    closedir(dir);
+    fileNames = (char **)malloc(count * sizeof(char *));
+
+    dir = opendir(dirPath); // reset directory stream to beginning
+    for(int i = 0; (entry = readdir(dir)) != NULL;) {
+        if (entry->d_type == DT_REG) { // if regular file
+            fileNames[i] = (char *)malloc((strlen(entry->d_name) + 1) * sizeof(char));
+            sprintf(fileNames[i], "%s", entry->d_name);
+            i++;
+        }
+    }
+
     return count;
 }

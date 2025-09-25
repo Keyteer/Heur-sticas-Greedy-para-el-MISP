@@ -33,9 +33,13 @@ int randGreedy(int n, NeighList *nl){
         if (node != temNode){
             node = temNode;
         }else{
-            node = nl->neighborhoods[rand() % n]->node;
-            while (visited[node]==true){
-                node = nl->neighborhoods[rand() % n]->node;
+            if (0<cont){
+               node = nl->neighborhoods[rand() % n]->node;
+                while (visited[node]==true){
+                    node = nl->neighborhoods[rand() % n]->node;
+                }
+            }else{
+                break;
             }
         }
         misp_size++;

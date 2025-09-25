@@ -1,8 +1,10 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include <chrono>
 #include <sys/stat.h>
 #include "gready.h"
+#include "randGreedy.h"
 #include "NeighList.h"
 #include "loader.h"
 #include "progressBar.h"
@@ -13,7 +15,7 @@ int main(int argc, char *argv[]) {
         return 1;
     }
 
-    const char *path = argv[1];
+    char *path = argv[1];
     if (path[strlen(path) - 1] == '/')
         ((char *)path)[strlen(path) - 1] = '\0';
 
@@ -35,10 +37,14 @@ int main(int argc, char *argv[]) {
             return 1;
         }
     } else {
-        // single file
+        // single file case
+        // remove fileName from path and store it in fileNames[0]
         fileNames = (char **)malloc(1 * sizeof(char *));
-        fileNames[0] = (char *)malloc((strlen(path) + 1) * sizeof(char));
-        strncpy(fileNames[0], path, strlen(path) + 1);
+        char *base = strstr(path, "/erdos");
+        base++[0] = '\0'; // null-terminate path and increment pointer to skip '/'
+        fileNames[0] = (char *)malloc(strlen(base) + 1 * sizeof(char));
+        strcpy(fileNames[0], base);
+
         fileCount = 1;
     }
 
@@ -76,29 +82,48 @@ int main(int argc, char *argv[]) {
 
         int *misp = new int[nl->n];
 
+        // greedy MISP test
         auto start = std::chrono::high_resolution_clock::now();
         int misp_size = gready(nl->n, nl, misp);
         auto end = std::chrono::high_resolution_clock::now();
-        std::chrono::duration<double, std::milli> elapsed = end - start;
-
+        std::chrono::duration<double, std::micro> elapsed = end - start;
+        // recording results
         grTimes[density] += elapsed.count();
         grResults[density] += misp_size;
+
+
+        // random greedy MISP test
+        start = std::chrono::high_resolution_clock::now();
+        misp_size = randGreedy(nl->n, nl);
+        end = std::chrono::high_resolution_clock::now();
+        elapsed = end - start;
+        // recording results
+        rgrTimes[density] += elapsed.count();
+        rgrResults[density] += misp_size;
+        
+        // +1 to amount of tests for this density
         tests[density] += 1;
 
         delete[] misp;
         delete nl;
 
+        // progress bar for long operations (should be overwritten by csv header)
         print_progress_bar(i + 1, fileCount, 20);
     }
     
 
-    printf("Desnsity,Greedy_Time(ms),Greedy_MISP_Size,Random_Greedy_Time(ms),Random_Greedy_MISP_Size\n");
+    // print csv header
+    printf("Density,Greedy_Time(μs),Greedy_MISP_Size,Random_Greedy_Time(μs),Random_Greedy_MISP_Size\n");
+
     for (int i = 0; i < 9; i++) {
         if (tests[i] > 0) {
+            // divide sums by number of tests to get averages
             grTimes[i] /= tests[i];
             rgrTimes[i] /= tests[i];
             grResults[i] /= tests[i];
             rgrResults[i] /= tests[i];
+
+            // print results for this density
             printf("0.%d,%f,%d,%f,%d\n", i + 1,
                    grTimes[i] / tests[i], grResults[i],
                    rgrTimes[i] / tests[i], rgrResults[i]);

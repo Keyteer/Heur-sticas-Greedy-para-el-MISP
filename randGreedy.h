@@ -24,6 +24,12 @@ int randGreedy(int n, NeighList *nl){
         if (neighbor != nullptr){
             visited[neighbor->node] = true;
             cont--;
+            struct Neighbor* temp = neighbor->next;
+            while (temp != nullptr){
+                visited[temp->node] = true;
+                cont--;
+                temp = temp->next;
+            }
         }
         
         int minDeg = n;
@@ -41,7 +47,7 @@ int randGreedy(int n, NeighList *nl){
             if (0<cont){
                node = nl->neighborhoods[rand() % n]->node;
                 while (visited[node]==true){
-                    node = (node++)%n;
+                    node = (node + 1)%n;
                 }
             }else{
                 break;

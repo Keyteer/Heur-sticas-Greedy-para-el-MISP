@@ -18,9 +18,14 @@ int randGreedy(int n, NeighList *nl){
     //random greedy MISP
     while (0<=cont){
         struct Neighbor* neighbor = nl->neighborhoods[node];
-        visited[neighbor->node] = true;
-        cont--;
-
+        while (neighbor != nullptr && visited[neighbor->node] == true) {
+            neighbor = neighbor->next;
+        }
+        if (neighbor != nullptr){
+            visited[neighbor->node] = true;
+            cont--;
+        }
+        
         int minDeg = n;
         int temNode = node;
         while (neighbor != nullptr) {
@@ -36,7 +41,7 @@ int randGreedy(int n, NeighList *nl){
             if (0<cont){
                node = nl->neighborhoods[rand() % n]->node;
                 while (visited[node]==true){
-                    node = nl->neighborhoods[rand() % n]->node;
+                    node = (node++)%n;
                 }
             }else{
                 break;

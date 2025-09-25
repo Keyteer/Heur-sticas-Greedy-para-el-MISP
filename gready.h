@@ -24,16 +24,20 @@ int gready(int n, NeighList *nl, int *misp) {
     //sort nodes_order by degree ascending, store transpose in nodes_order
     mergeSort(degrees, nodes_order, n);
 
+    bool *visited = new bool[n];
+    for (int i = 0; i < n; ++i)
+        visited[i] = false;
+
     //greedy MISP
     for (int i = 0; i < n; i++) {
         int node = nodes_order[i];
-        if (nl->valid[node]) {
-            nl->valid[node] = false;
+        if (!visited[node]) {
+            visited[node] = true;
             misp[misp_size] = node;
             misp_size++;
             struct Neighbor *neighbor = nl->neighborhoods[node];
             while (neighbor != nullptr) {
-                nl->valid[neighbor->node] = false;
+                visited[neighbor->node] = true;
                 neighbor = neighbor->next;
             }
         }

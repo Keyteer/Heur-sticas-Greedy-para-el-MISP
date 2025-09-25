@@ -11,22 +11,17 @@ struct NeighList {
     int *degrees;
     struct Neighbor **neighborhoods;
 
-    bool *valid;
-
     NeighList(int n) {
         this->n = n;
         degrees = new int[n];
         neighborhoods = new struct Neighbor *[n];
-        valid = new bool[n];
         for (int i = 0; i < n; i++) {
             degrees[i] = 0;
             neighborhoods[i] = nullptr;
-            valid[i] = true;
         }
     }
     ~NeighList() {
         delete[] degrees;
-        delete[] valid;
         for (int i = 0; i < n; i++) {
             struct Neighbor *current = neighborhoods[i];
             while (current != nullptr) {

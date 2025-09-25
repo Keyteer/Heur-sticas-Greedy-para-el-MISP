@@ -1,0 +1,38 @@
+\documentclass{article}
+\usepackage{graphicx} % Required for inserting images
+\usepackage[spanish,ruled,vlined]{algorithm2e}
+
+\title{pseudoCode}
+\author{Pedro Ignacio Palacios Rossi}
+\date{September 2025}
+
+\begin{document}
+
+\begin{algorithm}[H]
+\caption{Algoritmo greedy para el MISP}
+\KwIn{$n$ : número de nodos, $nl$ : lista de vecindad}
+\KwOut{$misp$ : nodos del conjunto independiente máximo}
+
+$misp\_size \gets 0$\;
+$misp[n] \gets \{\}$\;
+$nodes\_order[n] \gets 0, 1 ...(n-1)$\;
+mergeSort($degrees, nodes\_order, n$)\;
+inicializar $visited[n] \gets$ falso\;
+
+\For{$i \gets 0$ \KwTo $n-1$}{
+  $node \gets nodes\_order[i]$\;
+  \If{$\lnot visited[node]$}{
+    $visited[node] \gets$ verdadero\;
+    $misp[misp\_size] \gets node$\;
+    $misp\_size \gets misp\_size + 1$\;
+    \ForEach{$v$ en vecinos($node$)}{
+      $visited[v] \gets$ verdadero\;
+    }
+  }
+}
+\Return{$misp\_size$}\;
+\end{algorithm}
+
+
+
+\end{document}

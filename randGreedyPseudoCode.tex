@@ -1,0 +1,35 @@
+\documentclass{article}
+\usepackage{graphicx}
+\usepackage[spanish,ruled,vlined]{algorithm2e}
+
+\title{pseudoCode RandGreedy}
+\author{Pedro Ignacio Palacios Rossi}
+\date{September 2025}
+
+\begin{document}
+
+\begin{algorithm}[H]
+\caption{Algoritmo randGreedy para el MISP}
+\KwIn{$n$ : número de nodos, $nl$ : lista de vecindad}
+\KwOut{$misp$ : nodos del conjunto independiente maximal}
+
+$visited[0..n-1] \gets$ falso\;
+$misp \gets \{\}$\;
+
+$node \gets$ nodoAleatorioNoVisitado($nl$)\;
+Marcar $node$ como visitado y agregarlo a $misp$\;
+Marcar todos los vecinos de $node$ como visitados\;
+
+\While{existe un nodo no visitado}{
+  $candidate \gets$ vecinoNoVisitadoConMenorGrado($node, nl$)\;
+  \If{$candidate$ no existe}{
+    $candidate \gets$ nodoAleatorioNoVisitado($nl$)\;
+  }
+  $node \gets candidate$\;
+  Marcar $node$ como visitado y agregarlo a $misp$\;
+  Marcar todos los vecinos de $node$ como visitados\;
+}
+\Return{$|misp|$}\;
+\end{algorithm}
+
+\end{document}

@@ -8,7 +8,7 @@
 // nl [in]:       neighborhood list
 // misp [out]:    array to store the MISP nodes
 // returns:       the size of the MISP
-int gready(int n, NeighList *nl, int *misp) {
+int greedy(int n, NeighList *nl, int *misp) {
     int misp_size = 0;
 
     // initialize nodes_order with identity mapping

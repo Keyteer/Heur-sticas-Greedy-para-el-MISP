@@ -3,7 +3,7 @@
 #include <string.h>
 #include <chrono>
 #include <sys/stat.h>
-#include "gready.h"
+#include "greedy.h"
 #include "randGreedy.h"
 #include "NeighList.h"
 #include "loader.h"
@@ -84,7 +84,7 @@ int main(int argc, char *argv[]) {
 
         // greedy MISP test
         auto start = std::chrono::high_resolution_clock::now();
-        int misp_size = gready(nl->n, nl, misp);
+        int misp_size = greedy(nl->n, nl, misp);
         auto end = std::chrono::high_resolution_clock::now();
         std::chrono::duration<double, std::micro> elapsed = end - start;
         // recording results

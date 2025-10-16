@@ -62,7 +62,7 @@ int main(int argc, char *argv[]) {
         // selecting only files with density [0.1, 0.2, ... , 0.9]
         for (int i = 0; i < 9; i++) {
             char densStr[10];
-            sprintf(densStr, "p0c0.%d", i + 1);
+            sprintf(densStr, "p0c0.%d_", i + 1);
             if (strstr(file, densStr)) {
                 density = i;
                 break;

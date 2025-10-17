@@ -10,14 +10,17 @@ struct NeighList {
     int n;
     int *degrees;
     struct Neighbor **neighborhoods;
+    struct Neighbor **neighborhoods_tails;
 
     NeighList(int n) {
         this->n = n;
         degrees = new int[n];
         neighborhoods = new struct Neighbor *[n];
+        neighborhoods_tails = new struct Neighbor *[n];
         for (int i = 0; i < n; i++) {
             degrees[i] = 0;
             neighborhoods[i] = nullptr;
+            neighborhoods_tails[i] = nullptr;
         }
     }
     ~NeighList() {
@@ -40,14 +43,23 @@ struct NeighList {
 
         if (neighborhoods[u] == nullptr) {
             neighborhoods[u] = newNeighbor;
+            neighborhoods_tails[u] = newNeighbor;
         } else {
-            struct Neighbor *temp = neighborhoods[u];
-            while (temp->next != nullptr) {
-                temp = temp->next;
-            }
-            temp->next = newNeighbor;
+            neighborhoods_tails[u]->next = newNeighbor;
+            neighborhoods_tails[u] = newNeighbor;
         }
 
         degrees[u]++;
+    }
+
+    bool isNeighbor(int u, int v) {
+        struct Neighbor *temp = neighborhoods[u];
+        while (temp != nullptr) {
+            if (temp->node == v) {
+                return true;
+            }
+            temp = temp->next;
+        }
+        return false;
     }
 };

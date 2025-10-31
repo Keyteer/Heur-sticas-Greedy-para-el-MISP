@@ -1,8 +1,12 @@
 #pragma once
 
-struct Neighbor {
-    int node;
-    struct Neighbor *next;
+#include <vector>
+using std::vector;
+
+// mantain Neighbor struct for easy backward compatibility
+struct Neighbor : vector<int>::iterator {
+    int node(){ return **this; }
+    struct Neighbor *next(){ return this + 1; }
 };
 
 // Neighborhood List
@@ -10,55 +14,37 @@ struct NeighList {
     int n;
     int *degrees;
     struct Neighbor **neighborhoods;
-    struct Neighbor **neighborhoods_tails;
+    vector<int> *neighborhood_vectors;
 
     NeighList(int n) {
         this->n = n;
         degrees = new int[n];
+        neighborhood_vectors = new vector<int>[n];
         neighborhoods = new struct Neighbor *[n];
-        neighborhoods_tails = new struct Neighbor *[n];
         for (int i = 0; i < n; i++) {
             degrees[i] = 0;
             neighborhoods[i] = nullptr;
-            neighborhoods_tails[i] = nullptr;
         }
     }
     ~NeighList() {
         delete[] degrees;
-        for (int i = 0; i < n; i++) {
-            struct Neighbor *current = neighborhoods[i];
-            while (current != nullptr) {
-                struct Neighbor *temp = current;
-                current = current->next;
-                delete temp;
-            }
-        }
         delete[] neighborhoods;
     }
 
     void push(int u, int v) {
-        struct Neighbor *newNeighbor = new struct Neighbor();
-        newNeighbor->node = v;
-        newNeighbor->next = nullptr;
+        neighborhood_vectors[u].push_back(v);
+        degrees[u]++;
 
         if (neighborhoods[u] == nullptr) {
-            neighborhoods[u] = newNeighbor;
-            neighborhoods_tails[u] = newNeighbor;
-        } else {
-            neighborhoods_tails[u]->next = newNeighbor;
-            neighborhoods_tails[u] = newNeighbor;
+            neighborhoods[u] = (struct Neighbor *)&neighborhood_vectors[u].begin();
         }
-
-        degrees[u]++;
     }
 
     bool isNeighbor(int u, int v) {
-        struct Neighbor *temp = neighborhoods[u];
-        while (temp != nullptr) {
-            if (temp->node == v) {
+        for (int neighbor : neighborhood_vectors[u]) {
+            if (neighbor == v) {
                 return true;
             }
-            temp = temp->next;
         }
         return false;
     }

@@ -3,27 +3,18 @@
 #include <vector>
 using std::vector;
 
-// mantain Neighbor struct for easy backward compatibility
-struct Neighbor : vector<int>::iterator {
-    int node(){ return **this; }
-    struct Neighbor *next(){ return this + 1; }
-};
-
 // Neighborhood List
 struct NeighList {
     int n;
     int *degrees;
-    struct Neighbor **neighborhoods;
-    vector<int> *neighborhood_vectors;
+    vector<int> *neighborhoods;
 
     NeighList(int n) {
         this->n = n;
         degrees = new int[n];
-        neighborhood_vectors = new vector<int>[n];
-        neighborhoods = new struct Neighbor *[n];
+        neighborhoods = new vector<int>[n];
         for (int i = 0; i < n; i++) {
             degrees[i] = 0;
-            neighborhoods[i] = nullptr;
         }
     }
     ~NeighList() {
@@ -32,16 +23,12 @@ struct NeighList {
     }
 
     void push(int u, int v) {
-        neighborhood_vectors[u].push_back(v);
+        neighborhoods[u].push_back(v);
         degrees[u]++;
-
-        if (neighborhoods[u] == nullptr) {
-            neighborhoods[u] = (struct Neighbor *)&neighborhood_vectors[u].begin();
-        }
     }
 
     bool isNeighbor(int u, int v) {
-        for (int neighbor : neighborhood_vectors[u]) {
+        for (int neighbor : neighborhoods[u]) {
             if (neighbor == v) {
                 return true;
             }

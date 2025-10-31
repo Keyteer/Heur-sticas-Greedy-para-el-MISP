@@ -10,42 +10,42 @@ int randGreedy(int n, NeighList *nl){
     for (int i = 0; i < n; ++i)
         visited[i] = false;
 
-    int node = nl->neighborhoods[rand() % n]->node();
+    int node = rand() % n;
     misp_size++;
     cont--;
     visited[node] = true;
 
     //random greedy MISP
     while (0<=cont){
-        struct Neighbor* neighbor = nl->neighborhoods[node];
-        while (neighbor != nullptr && visited[neighbor->node()] == true) {
-            neighbor = neighbor->next();
+        vector<int>::iterator neighbor = nl->neighborhoods[node].begin();
+        while (neighbor != nl->neighborhoods[node].end() && visited[*neighbor] == true) {
+            neighbor++;
         }
-        if (neighbor != nullptr){
-            visited[neighbor->node()] = true;
+        if (neighbor != nl->neighborhoods[node].end()){
+            visited[*neighbor] = true;
             cont--;
-            struct Neighbor* temp = neighbor->next();
-            while (temp != nullptr){
-                visited[temp->node()] = true;
+            vector<int>::iterator temp = neighbor + 1;
+            while (temp != nl->neighborhoods[node].end()){
+                visited[*temp] = true;
                 cont--;
-                temp = temp->next();
+                temp++;
             }
         }
         
         int minDeg = n;
         int temNode = node;
-        while (neighbor != nullptr) {
-            if (visited[neighbor->node()]==false && nl->degrees[neighbor->node()]<minDeg){
-                minDeg = nl->degrees[neighbor->node()];
-                temNode = neighbor->node();
+        while (neighbor != nl->neighborhoods[node].end()) {
+            if (visited[*neighbor]==false && nl->degrees[*neighbor]<minDeg){
+                minDeg = nl->degrees[*neighbor];
+                temNode = *neighbor;
             }
-            neighbor = neighbor->next();
+            neighbor++;
         }
         if (node != temNode){
             node = temNode;
         }else{
             if (0<cont){
-               node = nl->neighborhoods[rand() % n]->node();
+               node = rand() % n;
                 while (visited[node]==true){
                     node = (node + 1)%n;
                 }

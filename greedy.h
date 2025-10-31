@@ -35,10 +35,8 @@ int greedy(int n, NeighList *nl, int *misp) {
             visited[node] = true;
             misp[misp_size] = node;
             misp_size++;
-            struct Neighbor *neighbor = nl->neighborhoods[node];
-            while (neighbor != nullptr) {
-                visited[neighbor->node()] = true;
-                neighbor = neighbor->next();
+            for (int neighbor : nl->neighborhoods[node]) {
+                visited[neighbor] = true;
             }
         }
     }
